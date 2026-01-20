@@ -6,9 +6,13 @@ export default async function middleware(request) {
   const url = new URL(request.url);
   
   // Only process HTML pages
-  const isHtmlPage = url.pathname.endsWith('.html') || url.pathname.endsWith('/');
+  const isHtmlPage =
+    url.pathname === '/' ||
+    url.pathname.endsWith('.html') ||
+    url.pathname.startsWith('/s=');
+
   if (!isHtmlPage) {
-    return; // Let the request pass through unchanged
+    return fetch(request); // Let the request pass through unchanged
   }
 
   // Fetch the original response
@@ -46,5 +50,8 @@ export default async function middleware(request) {
 }
 
 export const config = {
-  matcher: ['/', '/((?!api|_next/static|_vercel|favicon.ico).*)'],
+  matcher: [
+    '/',
+    '/((?!api|js|css|libs|image|manifest.json|service-worker.js|robots.txt|favicon.ico|_next/static|_vercel).*)'
+  ]
 };
