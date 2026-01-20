@@ -6,12 +6,16 @@ import axios from 'axios';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// 项目根目录（从 /api 目录往上两级）
+// 项目根目录
 const PROJECT_ROOT = path.resolve(__dirname, '..');
+
+console.log(`[INIT] __dirname: ${__dirname}`);
+console.log(`[INIT] PROJECT_ROOT: ${PROJECT_ROOT}`);
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'application/javascript; charset=utf-8',
+  '.mjs': 'application/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.json': 'application/json',
   '.svg': 'image/svg+xml',
@@ -45,16 +49,17 @@ function isValidUrl(urlString) {
 
 function serveFile(filePath, res) {
   try {
-    console.log(`[serveFile] Checking: ${filePath}`);
+    const debugLog = `[serveFile] PATH: ${filePath}`;
+    console.log(debugLog);
     
     if (!fs.existsSync(filePath)) {
-      console.log(`[serveFile] File not found: ${filePath}`);
+      console.log(`[serveFile] NOT FOUND: ${filePath}`);
       return null;
     }
     
     const stat = fs.statSync(filePath);
     if (stat.isDirectory()) {
-      console.log(`[serveFile] Is directory: ${filePath}`);
+      console.log(`[serveFile] IS DIRECTORY: ${filePath}`);
       return null;
     }
     
@@ -62,14 +67,16 @@ function serveFile(filePath, res) {
     const contentType = MIME_TYPES[ext] || 'application/octet-stream';
     const content = fs.readFileSync(filePath);
     
-    console.log(`[serveFile] Serving ${filePath} as ${contentType}`);
+    console.log(`[serveFile] SUCCESS - Type: ${contentType}, Size: ${content.length} bytes`);
+    
     res.setHeader('Content-Type', contentType);
     res.setHeader('Content-Length', content.length);
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    res.setHeader('X-File-Path', filePath); // 调试头
     res.status(200).send(content);
     return true;
   } catch (error) {
-    console.error(`[serveFile] Error: ${error.message}`);
+    console.error(`[serveFile] ERROR: ${error.message}`);
     return null;
   }
 }
@@ -79,10 +86,10 @@ export default async function handler(req, res) {
     const { route } = req.query;
     const pathname = Array.isArray(route) ? '/' + route.join('/') : '/';
     
-    console.log(`[API] ${req.method} ${pathname}`);
-    console.log(`[API] PROJECT_ROOT: ${PROJECT_ROOT}`);
+    console.log(`\n[API] REQUEST: ${req.method} ${pathname}`);
+    console.log(`[API] Query params:`, route);
     
-    // 1. 处理代理请求
+    // 1. 代理请求
     if (pathname.startsWith('/proxy/')) {
       const encodedUrl = pathname.slice(7);
       const targetUrl = decodeURIComponent(encodedUrl);
@@ -111,56 +118,64 @@ export default async function handler(req, res) {
       }
     }
     
-    // 2. 检查是否是有扩展名的文件（js, css, json, 图片等）
+    // 2. 检查是否有扩展名
     const hasExtension = path.extname(pathname);
+    console.log(`[API] Has extension: ${hasExtension ? 'YES (' + hasExtension + ')' : 'NO'}`);
+    
     if (hasExtension) {
       const filePath = path.join(PROJECT_ROOT, pathname);
       const resolvedPath = path.resolve(filePath);
       
-      // 安全检查
+      console.log(`[API] Resolved path: ${resolvedPath}`);
+      console.log(`[API] PROJECT_ROOT: ${PROJECT_ROOT}`);
+      console.log(`[API] Path valid: ${resolvedPath.startsWith(PROJECT_ROOT) ? 'YES' : 'NO'}`);
+      
       if (!resolvedPath.startsWith(PROJECT_ROOT)) {
+        console.log(`[API] SECURITY: Access denied`);
         return res.status(403).json({ error: 'Access denied' });
       }
       
       const served = serveFile(resolvedPath, res);
-      if (served) return;
+      if (served) {
+        console.log(`[API] Response sent successfully`);
+        return;
+      }
       
-      // 文件不存在，返回 404
+      console.log(`[API] File not found, returning 404`);
       return res.status(404).json({ error: 'File not found', path: pathname });
     }
     
-    // 3. 处理搜索路由
+    // 3. 搜索路由
     if (pathname.match(/^\/s=/)) {
       const filePath = path.join(PROJECT_ROOT, 'index.html');
       return serveFile(filePath, res) || 
              res.status(404).json({ error: 'index.html not found' });
     }
     
-    // 4. 处理 player 路由
+    // 4. Player 路由
     if (pathname.startsWith('/player')) {
       const filePath = path.join(PROJECT_ROOT, 'player.html');
       return serveFile(filePath, res) ||
              res.status(404).json({ error: 'player.html not found' });
     }
     
-    // 5. 处理根路由
+    // 5. 根路由
     if (pathname === '/') {
       const filePath = path.join(PROJECT_ROOT, 'index.html');
       return serveFile(filePath, res) ||
              res.status(404).json({ error: 'index.html not found' });
     }
     
-    // 6. 其他路由尝试作为 HTML 页面提供
-    let htmlPath = path.join(PROJECT_ROOT, pathname + '.html');
-    let resolvedPath = path.resolve(htmlPath);
+    // 6. 其他路由
+    const htmlPath = path.join(PROJECT_ROOT, pathname + '.html');
+    const resolvedPath = path.resolve(htmlPath);
     
     if (resolvedPath.startsWith(PROJECT_ROOT) && fs.existsSync(resolvedPath)) {
       return serveFile(resolvedPath, res) ||
              res.status(500).json({ error: 'Error reading HTML' });
     }
     
-    // 7. 都不行，返回 404
-    console.log(`[API] No match found for ${pathname}`);
+    console.log(`[API] No match for ${pathname}`);
     res.status(404).json({ error: 'Not found', path: pathname });
     
   } catch (error) {
