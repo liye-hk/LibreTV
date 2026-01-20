@@ -41,22 +41,6 @@
   ],
   "rewrites": [
     {
-      "source": "/js/:path*",
-      "destination": "/api/assets/js/:path*"
-    },
-    {
-      "source": "/css/:path*",
-      "destination": "/api/assets/css/:path*"
-    },
-    {
-      "source": "/libs/:path*",
-      "destination": "/api/assets/libs/:path*"
-    },
-    {
-      "source": "/image/:path*",
-      "destination": "/api/assets/image/:path*"
-    },
-    {
       "source": "/proxy/:path*",
       "destination": "/api/proxy/:path*"
     },
