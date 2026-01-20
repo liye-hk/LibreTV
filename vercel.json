@@ -1,46 +1,10 @@
 {
-  "buildCommand": "echo 'Static + API deployment'",
+  "buildCommand": "npm install",
   "outputDirectory": ".",
   "rewrites": [
     {
-      "source": "/js/:path*",
-      "destination": "/api/static/js/:path*"
-    },
-    {
-      "source": "/css/:path*",
-      "destination": "/api/static/css/:path*"
-    },
-    {
-      "source": "/libs/:path*",
-      "destination": "/api/static/libs/:path*"
-    },
-    {
-      "source": "/image/:path*",
-      "destination": "/api/static/image/:path*"
-    },
-    {
-      "source": "/manifest.json",
-      "destination": "/api/static/manifest.json"
-    },
-    {
-      "source": "/robots.txt",
-      "destination": "/api/static/robots.txt"
-    },
-    {
-      "source": "/service-worker.js",
-      "destination": "/api/static/service-worker.js"
-    },
-    {
-      "source": "/proxy/:path*",
-      "destination": "/api/proxy/:path*"
-    },
-    {
-      "source": "/s=:query",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/player/:path*",
-      "destination": "/player.html"
+      "source": "/(.*)",
+      "destination": "/api"
     }
   ]
 }
