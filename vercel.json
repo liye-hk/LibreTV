@@ -23,6 +23,18 @@
   ],
   "rewrites": [
     {
+      "source": "/js/:path*",
+      "destination": "/js/:path*"
+    },
+    {
+      "source": "/css/:path*",
+      "destination": "/css/:path*"
+    },
+    {
+      "source": "/libs/:path*",
+      "destination": "/libs/:path*"
+    },
+    {
       "source": "/proxy/:path*",
       "destination": "/api/proxy/:path*"
     },
