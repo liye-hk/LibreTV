@@ -1,7 +1,17 @@
 {
-  "buildCommand": "echo \"No build needed\"",
+  "public": "./",
+  "buildCommand": "echo 'Static deployment'",
   "outputDirectory": ".",
   "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
     {
       "source": "/js/:path*",
       "headers": [
@@ -46,14 +56,10 @@
     },
     {
       "source": "/s=:query",
-      "destination": "/index.html"
+      "destination": "/index.html?q=:query"
     },
     {
-      "source": "/player.html",
-      "destination": "/player.html"
-    },
-    {
-      "source": "/player.html/:path*",
+      "source": "/player/:path*",
       "destination": "/player.html"
     }
   ]
