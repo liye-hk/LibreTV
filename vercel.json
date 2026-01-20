@@ -1,4 +1,5 @@
 {
+  "public": ".",
   "rewrites": [
     {
       "source": "/proxy/:path*",
@@ -15,10 +16,11 @@
     {
       "source": "/player.html/:path*",
       "destination": "/player.html"
-    },
-    {
-      "source": "/:path*",
-      "destination": "/:path*"
     }
+    //,
+    //{
+      //"source": "/:path*",
+     // "destination": "/:path*"
+    //}
   ]
 }
