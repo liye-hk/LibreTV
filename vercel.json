@@ -19,9 +19,43 @@
           "value": "public, max-age=31536000, immutable"
         }
       ]
+    },
+    {
+      "source": "/libs/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/image/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     }
   ],
   "rewrites": [
+    {
+      "source": "/js/:path*",
+      "destination": "/api/assets/js/:path*"
+    },
+    {
+      "source": "/css/:path*",
+      "destination": "/api/assets/css/:path*"
+    },
+    {
+      "source": "/libs/:path*",
+      "destination": "/api/assets/libs/:path*"
+    },
+    {
+      "source": "/image/:path*",
+      "destination": "/api/assets/image/:path*"
+    },
     {
       "source": "/proxy/:path*",
       "destination": "/api/proxy/:path*"
